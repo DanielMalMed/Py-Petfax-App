@@ -1,10 +1,30 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect
+from . import models
+
 import json 
 
 factbp = Blueprint('fact', __name__, url_prefix="/facts")
 
-@factbp.route('/')
+@factbp.route('/new')
+def new(): 
+    return render_template('facts/facts.html')
+
+@factbp.route('/', methods=['GET', 'POST']) 
 def index(): 
-    return render_template('facts.html')
+    if request.method == 'POST':
+        submitter = request.form['submitter']
+        fact = request.form['fact']
+
+        new_fact = models.Fact(submitter=submitter,fact=fact)
+        models.db.session.add(new_fact)
+        models.db.session.commit()
+
+        return redirect('/facts')
+    
+    results = models.Fact.query.all()
+
+    return render_template('facts/index.html', facts=results)
+
+
 
 
